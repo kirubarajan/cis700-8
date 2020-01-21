@@ -562,11 +562,11 @@ def build_game():
   drawbridge = Location("Drawbridge", "You are standing on one side of a drawbridge leading to ACTION CASTLE. There is a mean troll here.")
   courtyard = Location("Courtyard", "You are in the courtyard of ACTION CASTLE. There is a guard here, blocking the path east.")
   tower_stairs = Location("Tower Stairs", "You are climbing the stairs to the tower. There is a locked door here.")
-  tower = Location("You are inside a tower. The princess is here.")
-  dungeon_stairs = Location("You are climbing the stairs down to the dungeon. It is too dark to see!")
-  dungeon = Location("You are in the dungeon. There is a spooky ghost here.")
-  great_feasting_hall = Location("You stand inside the Great Feasting Hall. There is a strange candle here.")
-  throne_room = Location("This is the throne room of ACTION CASTLE. There is an ornate golden throne here.")
+  tower = Location("Tower", "You are inside a tower. The princess is here.")
+  dungeon_stairs = Location("Dungeon Stairs", "You are climbing the stairs down to the dungeon. It is too dark to see!")
+  dungeon = Location("Dungeon", "You are in the dungeon. There is a spooky ghost here.")
+  great_feasting_hall = Location("Great Feeding Hall", "You stand inside the Great Feasting Hall. There is a strange candle here.")
+  throne_room = Location("Throne Room", "This is the throne room of ACTION CASTLE. There is an ornate golden throne here.")
 
   # Connections
   cottage.add_connection("out", garden_path)
@@ -588,7 +588,7 @@ def build_game():
   
   courtyard.add_connection("up", tower_stairs)
   courtyard.add_connection("down", dungeon_stairs) # blocked
-  courtyard.add_connection"west", drawbridge)
+  courtyard.add_connection("west", drawbridge)
   courtyard.add_connection("east", great_feasting_hall)
 
   tower_stairs.add_connection("down", courtyard)
