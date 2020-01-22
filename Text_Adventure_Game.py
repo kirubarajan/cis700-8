@@ -208,6 +208,10 @@ def check_preconditions(preconditions, game, print_failure_reasons=True):
         all_conditions_met = False
         if print_failure_reasons:
           print("You don't have the %s" % item.name)
+    if check == "inventory_contains_silent":
+      item = preconditions[check]
+      if not game.is_in_inventory(item):
+        all_conditions_met = False
     if check == "in_location":
       location = preconditions[check]
       if not game.curr_location == location:
@@ -555,7 +559,6 @@ def destroy_item(game, *args):
 def create_item(game, *args):
   item, _ = args[0]
   game.curr_location.add_item(item.name, item)  
-  print(game.curr_location.items)
 
 def end_game(game, *args):
   """Ends the game."""
@@ -583,6 +586,7 @@ def perform_multiple_actions(game, *args):
 
 # In[7]:
 
+lit_lamp = Item("lit lamp", "a lit lamp", "IT IS VERY BRIGHT", start_at=None)
 
 def build_game():
   # Locations
@@ -647,8 +651,8 @@ def build_game():
   dead_branch = Item("branch", 'a dead branch', "a simple dead branch", start_at=tall_tree)
   troll = Item("troll", 'a troll', "IT IS WARTY GREEN AND HUNGRY", start_at=drawbridge, gettable=False)
   unconscious_troll= Item("unconscious troll", "an unconscious troll is in the pond", "HIS EYES ARE IN THE BACK OF HIS HEAD.", start_at=None, gettable=False)
-  key = Item("key", "a key is here", "its just a key", start_at=None)
-  
+  key = Item("key", "a key is here", "its a key that unlocks something", start_at=None)
+
   # Sceneary (not things that you can pick up)
   pond = Item("pond", "a small fishing pond", "THERE ARE FISH IN THE POND.", start_at=fishing_pond, gettable=False)
   crown = Item("crown", "A simple crown", "THERE IS A CROWN", start_at=throne_room)
@@ -666,11 +670,10 @@ def build_game():
     ], preconditions={"inventory_contains":fish , "location_has_item": troll})
 
   guard.add_action("hit guard with branch", perform_multiple_actions, 
-    ([(destroy_item, (dead_branch,"You swing your branch against the guard. It shatters to pieces.",
-                              "You already tried that.")),
-    (destroy_item, (guard,"The guard slumps over, unconscious.","")),
-    (create_item, (unconscious_guard,"The guard's unconscious body lies on the ground.")),
-    (create_item, (key,"His key falls from his hand.")),
+    ([(destroy_item, (dead_branch,"You swing your branch against the guard. It shatters to pieces.")),
+    (destroy_item, (guard,"The guard slumps over, unconscious.")),
+    (create_item, (unconscious_guard, "The guard's unconscious body lies on the ground.")),
+    (create_item, (key, "His key falls from his hand.")),
     ]), preconditions={"inventory_contains":dead_branch , "location_has_item": guard})
 
   crown.add_action("wear crown", perform_multiple_actions, (
@@ -686,6 +689,7 @@ def build_game():
   drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item_silent":unconscious_troll})
   courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item_silent":unconscious_guard})
   tower_stairs.add_block("up", "The door is locked.", preconditions={"inventory_contains":key})
+  dungeon_stairs.add_block("down", "The dungeon is too dark to proceed.", preconditions={"inventory_contains_silent": lit_lamp})
 
   return Game(cottage)
 
@@ -702,6 +706,9 @@ def game_loop():
   game.describe()
 
   lamp = Item("lamp", "a lamp", "a simple lamp", start_at=None)
+  lamp.add_action("light lamp", perform_multiple_actions, 
+    ([(destroy_item, (lamp, "You light your lamp.")), (add_item_to_inventory, (lit_lamp, "You can see in dark places now.", "The lamp is already lit."))]), preconditions={"inventory_contains": lamp})
+
   game.add_to_inventory(lamp)
 
   command = ""
