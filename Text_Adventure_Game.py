@@ -220,6 +220,10 @@ def check_preconditions(preconditions, game, print_failure_reasons=True):
         all_conditions_met = False
         if print_failure_reasons:
           print("The %s isn't in this location" % item.name)
+    if check == "location_has_item_silent":
+      item = preconditions[check]
+      if not item.name in game.curr_location.items:
+        all_conditions_met = False
     # todo - add other types of preconditions
   return all_conditions_met
 
@@ -680,8 +684,8 @@ def build_game():
   fish.add_action("eat fish",  end_game, ("That's disgusting! It's raw! And definitely not sashimi-grade! But you've won this version of the game. THE END."))
 
   drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item":unconscious_troll})
-  courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item":unconscious_guard})
-  # tower_stairs.add_block("up", "You need a key to access the tower", preconditions={"inventory_contains":key})
+  courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item_silent":unconscious_guard})
+  tower_stairs.add_block("up", "The door is locked.", preconditions={"inventory_contains":key})
 
   return Game(courtyard)
 
