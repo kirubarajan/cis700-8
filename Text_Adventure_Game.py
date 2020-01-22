@@ -658,7 +658,7 @@ def build_game():
 
   # Sceneary (not things that you can pick up)
   pond = Item("pond", "a small fishing pond", "THERE ARE FISH IN THE POND.", start_at=fishing_pond, gettable=False)
-  crown = Item("crown", "A simple crown", "THERE IS A CROWN", start_at=throne_room)
+  crown = Item("crown", "A simple crown", "THERE IS A CROWN", start_at=None)
   guard = Item("guard", "a guard carrying a sword and a key", "HE LOOKS AT YOU SUSPICIOUSLY.", start_at=courtyard, gettable=False)
   unconscious_guard = Item("unconscious guard", "an unconscious guard is slumpped against the wall", "HE HAS BITS OF BRANCH ON HIS UNIFORM.", start_at=None, gettable=False)
 
@@ -700,9 +700,9 @@ def build_game():
   candle.add_action("light candle", perform_multiple_actions, ([
     (destroy_item, (candle, "You light the candle.")),
     (create_item, (lit_candle, "The candle is giving off a strange, acrid-smelling smoke."))
-  ]), preconditions={"location_has_item": candle})
+  ]), preconditions={"inventory_contains": candle})
 
-  return Game(great_feasting_hall)
+  return Game(cottage)
 
 
 # # Play the game
