@@ -553,8 +553,9 @@ def destroy_item(game, *args):
   return False
 
 def create_item(game, *args):
-  (item, action_description) = args[0]
-  game.curr_location.add_item(item, action_description)  
+  item, _ = args[0]
+  game.curr_location.add_item(item.name, item)  
+  print(game.curr_location.items)
 
 def end_game(game, *args):
   """Ends the game."""
@@ -645,7 +646,7 @@ def build_game():
   fish = Item("fish", "a dead fish", "IT SMELLS TERRIBLE.", start_at=None)
   dead_branch = Item("branch", 'a dead branch', "a simple dead branch", start_at=tall_tree)
   troll = Item("troll", 'a troll', "IT IS WARTY GREEN AND HUNGRY", start_at=drawbridge, gettable=False)
-  unconscious_troll= Item("unconscious troll", "an unconscious troll is in thr pond", "HIS EYES ARE IN THE BACK OF HIS HEAD.", start_at=None, gettable=False)
+  unconscious_troll= Item("unconscious troll", "an unconscious troll is in the pond", "HIS EYES ARE IN THE BACK OF HIS HEAD.", start_at=None, gettable=False)
   key = Item("key", "a key is here", "its just a key", start_at=None)
   
   # Sceneary (not things that you can pick up)
@@ -660,8 +661,8 @@ def build_game():
   
   troll.add_action("give fish to troll", perform_multiple_actions, 
     [(destroy_item, (fish, "You feed the fish to troll.")),
-    (destroy_item, (troll,"The troll slumps over, unconscious.")),
-    (create_item, (unconscious_guard,"The guard's unconscious body lies on the ground.")),
+    (destroy_item, (troll, "The troll slumps over, unconscious.")),
+    (create_item, (unconscious_troll, "The troll's unconscious body lies on the ground.")),
     ], preconditions={"inventory_contains":fish , "location_has_item": troll})
 
   guard.add_action("hit guard with branch", perform_multiple_actions, 
@@ -676,18 +677,17 @@ def build_game():
       [(destroy_item, (unconscious_guard,"The guard wakes up.","")),
     (create_item, (guard,"The guard kneels on the foor to hail his new king."))]), preconditions={"location_has_item": unconscious_guard})
 
-
   rosebush.add_action("pick rose",  add_item_to_inventory, (rose, "You pick the lone rose from the rosebush.", "You already picked the rose."))
   rose.add_action("smell rose",  describe_something, ("It smells sweet."))
   pond.add_action("catch fish",  describe_something, ("You reach into the pond and try to catch a fish with your hands, but they are too fast."))
   pond.add_action("catch fish with pole",  add_item_to_inventory, (fish, "You dip your hook into the pond and catch a fish.","You weren't able to catch another fish."), preconditions={"inventory_contains":fishing_pole})
   fish.add_action("eat fish",  end_game, ("That's disgusting! It's raw! And definitely not sashimi-grade! But you've won this version of the game. THE END."))
 
-  drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item":unconscious_troll})
+  drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item_silent":unconscious_troll})
   courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item_silent":unconscious_guard})
   tower_stairs.add_block("up", "The door is locked.", preconditions={"inventory_contains":key})
 
-  return Game(courtyard)
+  return Game(cottage)
 
 
 # # Play the game
