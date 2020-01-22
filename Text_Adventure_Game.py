@@ -557,8 +557,9 @@ def destroy_item(game, *args):
   return False
 
 def create_item(game, *args):
-  item, _ = args[0]
+  item, description = args[0]
   game.curr_location.add_item(item.name, item)  
+  print(description)
 
 def end_game(game, *args):
   """Ends the game."""
@@ -652,13 +653,20 @@ def build_game():
   troll = Item("troll", 'a troll', "IT IS WARTY GREEN AND HUNGRY", start_at=drawbridge, gettable=False)
   unconscious_troll= Item("unconscious troll", "an unconscious troll is in the pond", "HIS EYES ARE IN THE BACK OF HIS HEAD.", start_at=None, gettable=False)
   key = Item("key", "a key is here", "its a key that unlocks something", start_at=None)
+  candle = Item("candle", "a strange candle is here", "the candle is covered in strange ruins", start_at=great_feasting_hall)
+  lit_candle = Item("lit candle", "a lit candle is here", "the candle gives off a strange, acrid-smelling smoke", start_at=None)
 
   # Sceneary (not things that you can pick up)
   pond = Item("pond", "a small fishing pond", "THERE ARE FISH IN THE POND.", start_at=fishing_pond, gettable=False)
   crown = Item("crown", "A simple crown", "THERE IS A CROWN", start_at=throne_room)
-  guard = Item("guard", "a guard carrying a sword and a key", "HE LOOKS AT YOU SUSPICIOUSLY.",
-  start_at=courtyard, gettable=False)
+  guard = Item("guard", "a guard carrying a sword and a key", "HE LOOKS AT YOU SUSPICIOUSLY.", start_at=courtyard, gettable=False)
   unconscious_guard = Item("unconscious guard", "an unconscious guard is slumpped against the wall", "HE HAS BITS OF BRANCH ON HIS UNIFORM.", start_at=None, gettable=False)
+
+  # add blocks
+  drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item_silent":unconscious_troll})
+  courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item_silent":unconscious_guard})
+  tower_stairs.add_block("up", "The door is locked.", preconditions={"inventory_contains":key})
+  dungeon_stairs.add_block("down", "The dungeon is too dark to proceed.", preconditions={"inventory_contains_silent": lit_lamp})
 
   # Add special functions to your items
   troll.add_action("hit troll with branch", end_game, ("You have failed to attack the troll. GAME OVER"), preconditions={"inventory_contains":dead_branch})
@@ -686,12 +694,15 @@ def build_game():
   pond.add_action("catch fish with pole",  add_item_to_inventory, (fish, "You dip your hook into the pond and catch a fish.","You weren't able to catch another fish."), preconditions={"inventory_contains":fishing_pole})
   fish.add_action("eat fish",  end_game, ("That's disgusting! It's raw! And definitely not sashimi-grade! But you've won this version of the game. THE END."))
 
-  drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item_silent":unconscious_troll})
-  courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item_silent":unconscious_guard})
-  tower_stairs.add_block("up", "The door is locked.", preconditions={"inventory_contains":key})
-  dungeon_stairs.add_block("down", "The dungeon is too dark to proceed.", preconditions={"inventory_contains_silent": lit_lamp})
+  candle.add_action("translate candle", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  candle.add_action("decipher candle", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  candle.add_action("read candle", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  candle.add_action("light candle", perform_multiple_actions, ([
+    (destroy_item, (candle, "You light the candle.")),
+    (create_item, (lit_candle, "The candle is giving off a strange, acrid-smelling smoke."))
+  ]), preconditions={"location_has_item": candle})
 
-  return Game(cottage)
+  return Game(great_feasting_hall)
 
 
 # # Play the game
