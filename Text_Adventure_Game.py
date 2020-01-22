@@ -619,7 +619,7 @@ def build_game():
   courtyard.add_connection("east", great_feasting_hall) #blocked
 
   tower_stairs.add_connection("down", courtyard)
-  tower_stairs.add_connection("up", tower_stairs)
+  tower_stairs.add_connection("up", tower)
 
   tower.add_connection("down", tower_stairs)
 
@@ -632,7 +632,6 @@ def build_game():
   great_feasting_hall.add_connection("east", throne_room)
 
   throne_room.add_connection("west", great_feasting_hall)
-
 
   # Items that you can pick up
   fishing_pole = Item("pole", "a fishing pole", "A SIMPLE FISHING POLE.", start_at=cottage)
@@ -682,6 +681,7 @@ def build_game():
 
   drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item":unconscious_troll})
   courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item":unconscious_guard})
+  # tower_stairs.add_block("up", "You need a key to access the tower", preconditions={"inventory_contains":key})
 
   return Game(courtyard)
 
