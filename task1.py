@@ -217,6 +217,10 @@ def check_preconditions(preconditions, game, print_failure_reasons=True):
         all_conditions_met = False
         if print_failure_reasons:
           print("The %s isn't in this location" % item.name)
+    if check == "location_has_item_silent":
+      item = preconditions[check]
+      if not item.name in game.curr_location.items:
+        all_conditions_met = False
     # todo - add other types of preconditions
   return all_conditions_met
 
@@ -570,18 +574,18 @@ lit_lamp = Item("lit lamp", "a lit lamp", "IT IS VERY BRIGHT", start_at=None)
 
 def build_game():
   # Locations
-  cottage = Location("Cottage", "You are standing in a small cottage. There is a fishing pole here.")
-  garden_path = Location("Garden Path", "You are standing on a lush garden path. There is a rosebush here. There is a cottage here.")
+  cottage = Location("Cottage", "You are standing in a small cottage. ")
+  garden_path = Location("Garden Path", "You are standing on a lush garden path. There is a cottage here.")
   fishing_pond = Location("Fishing Pond", "You are at the edge of a small fishing pond.")
   winding_path = Location("Winding Path", "You are walking along a winding path. There is a tall tree here.")
-  tall_tree = Location("Top of Tall Tree", "You are at the top of a tall tree. There is a stout, dead branch here.")
+  tall_tree = Location("Top of Tall Tree", "You are at the top of a tall tree.")
   drawbridge = Location("Drawbridge", "You are standing on one side of a drawbridge leading to ACTION CASTLE. There is a mean troll here.")
-  courtyard = Location("Courtyard", "You are in the courtyard of ACTION CASTLE. There is a guard here, blocking the path east.")
-  tower_stairs = Location("Tower Stairs", "You are climbing the stairs to the tower. There is a locked door here.")
-  tower = Location("Tower", "You are inside a tower. The princess is here.")
+  courtyard = Location("Courtyard", "You are in the courtyard of ACTION CASTLE.")
+  tower_stairs = Location("Tower Stairs", "You are climbing the stairs to the tower. There is a door with a lock on it.")
+  tower = Location("Tower", "You are inside a tower.")
   dungeon_stairs = Location("Dungeon Stairs", "You are climbing the stairs down to the dungeon. It is too dark to see!")
-  dungeon = Location("Dungeon", "You are in the dungeon. There is a spooky ghost here.")
-  great_feasting_hall = Location("Great Feeding Hall", "You stand inside the Great Feasting Hall. There is a strange candle here.")
+  dungeon = Location("Dungeon", "You are in the dungeon.")
+  great_feasting_hall = Location("Great Feeding Hall", "You stand inside the Great Feasting Hall.")
   throne_room = Location("Throne Room", "This is the throne room of ACTION CASTLE. There is an ornate golden throne here.")
 
   # Connections
@@ -628,10 +632,10 @@ def build_game():
   rosebush = Item("rosebush", "a rosebush", "THE ROSEBUSH CONTAINS A SINGLE RED ROSE.  IT IS BEAUTIFUL.", start_at=garden_path)
   rose = Item("rose", "a red rose", "IT SMELLS GOOD.",  start_at=None)
   fish = Item("fish", "a dead fish", "IT SMELLS TERRIBLE.", start_at=None)
-  dead_branch = Item("branch", 'a dead branch', "a simple dead branch", start_at=tall_tree)
+  dead_branch = Item("branch", 'a dead branch', "it's a stout dead dead branch", start_at=tall_tree)
   troll = Item("troll", 'a troll', "IT IS WARTY GREEN AND HUNGRY", start_at=drawbridge, gettable=False)
   unconscious_troll= Item("unconscious troll", "an unconscious troll is in the pond", "HIS EYES ARE IN THE BACK OF HIS HEAD.", start_at=None, gettable=False)
-  key = Item("key", "a key is here", "its a key that unlocks something", start_at=None)
+  key = Item("key", "a key", "its a key that unlocks something", start_at=None)
   candle = Item("candle", "a strange candle is here", "the candle is covered in strange ruins", start_at=great_feasting_hall)
   lit_candle = Item("lit candle", "a lit candle is here", "the candle gives off a strange, acrid-smelling smoke", start_at=None)
 
@@ -652,7 +656,7 @@ def build_game():
   # add blocks
   drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item":unconscious_troll})
   courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item":unconscious_guard})
-  tower_stairs.add_block("up", "The door is locked.", preconditions={"location_has_item":open_door})
+  tower_stairs.add_block("up", "The door is locked.", preconditions={"location_has_item_silent": open_door})
   dungeon_stairs.add_block("down", "The dungeon is too dark to proceed.", preconditions={"inventory_contains": lit_lamp})
 
   # Add special functions to your items
