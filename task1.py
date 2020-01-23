@@ -530,8 +530,6 @@ def destroy_item(game, *args):
   elif item.name in game.curr_location.items:
     game.curr_location.remove_item(item)
     print(action_description)
-  else:
-    print(already_done_description)
   return False
 
 def create_item(game, *args):
@@ -648,21 +646,28 @@ def build_game():
   revelers = Item("revelers", "a group of revelers are celebrating their new king", "the revelers are very happy", start_at=None, gettable=False)
   courtiers_guards_subjects = Item("courtiers, guards and other subjects", "the room is full of of courtiers, guards and other subjects", "they are very happy", start_at=None, gettable=False)
   throne = Item("throne", "there is an ornate golden throne here.", "the throne is ornate", start_at=throne_room, gettable=False)
+  talking_princess = Item("princess", "the princess is now talking", "the princess is sad, beautiful and lonely and friendly. she awaits her prince.", start_at=None, gettable=False)
+  open_door = Item("door", "Door to the Courtyard", "", start_at=None, gettable=False)
 
   # add blocks
-  drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item_silent":unconscious_troll})
-  courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item_silent":unconscious_guard})
-  tower_stairs.add_block("up", "The door is locked.", preconditions={"inventory_contains":key})
-  dungeon_stairs.add_block("down", "The dungeon is too dark to proceed.", preconditions={"inventory_contains_silent": lit_lamp})
+  drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item":unconscious_troll})
+  courtyard.add_block("east", "There is a Guard blocking the path",  preconditions={"location_has_item":unconscious_guard})
+  tower_stairs.add_block("up", "The door is locked.", preconditions={"location_has_item":open_door})
+  dungeon_stairs.add_block("down", "The dungeon is too dark to proceed.", preconditions={"inventory_contains": lit_lamp})
 
   # Add special functions to your items
   troll.add_action("hit troll with branch", end_game, ("You have failed to attack the troll. GAME OVER"), preconditions={"inventory_contains":dead_branch})
-  
   troll.add_action("give fish to troll", perform_multiple_actions, 
     [(destroy_item, (fish, "You feed the fish to troll.")),
     (destroy_item, (troll, "The troll slumps over, unconscious.")),
     (create_item, (unconscious_troll, "The troll's unconscious body lies on the ground.")),
     ], preconditions={"inventory_contains":fish , "location_has_item": troll})
+
+  key.add_action("unlock door", create_item, (open_door, "The door has opened."), preconditions={ "in_location": tower_stairs})
+  
+  princess.add_action("give rose to princess", perform_multiple_actions, 
+      [(destroy_item, (princess,"The princess opens up.",)),
+    (create_item, (talking_princess,"The princess will now talk to you.")),], preconditions={"inventory_contains": rose})
 
   guard.add_action("hit guard with branch", perform_multiple_actions, 
     ([(destroy_item, (dead_branch,"You swing your branch against the guard. It shatters to pieces.")),
@@ -673,8 +678,8 @@ def build_game():
     ]), preconditions={"inventory_contains":dead_branch , "location_has_item": guard})
 
   crown.add_action("wear crown", perform_multiple_actions, (
-      [(destroy_item, (unconscious_guard,"The guard wakes up.","")),
-    (create_item, (guard,"The guard kneels on the foor to hail his new king."))]), preconditions={"location_has_item": unconscious_guard})
+      [(destroy_item, (unconscious_guard,"The guard wakes up.")),
+    (create_item, (guard,"The guard kneels on the foor to hail his new king.")),]), preconditions={"location_has_item": married_princess})
 
   rosebush.add_action("pick rose",  add_item_to_inventory, (rose, "You pick the lone rose from the rosebush.", "You already picked the rose."))
   rose.add_action("smell rose",  describe_something, ("It smells sweet."))
@@ -683,9 +688,12 @@ def build_game():
   fish.add_action("eat fish",  end_game, ("That's disgusting! It's raw! And definitely not sashimi-grade! But you've won this version of the game. THE END."))
   dead_branch.add_action("jump", end_game, ("You have jumped from the tall tree fatally to your end."))
 
-  candle.add_action("translate candle", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
-  candle.add_action("decipher candle", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
-  candle.add_action("read candle", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  candle.add_action("translate runes", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  candle.add_action("decipher runes", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  candle.add_action("read runes", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  lit_candle.add_action("translate runes", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  lit_candle.add_action("decipher runes", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
+  lit_candle.add_action("read runes", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
   candle.add_action("light candle", perform_multiple_actions, ([
     (destroy_item, (candle, "You light the candle.")),
     (create_item, (lit_candle, "The candle is giving off a strange, acrid-smelling smoke.")),
@@ -693,13 +701,13 @@ def build_game():
     (create_item, (crown, "The ghost drops a golden crown."))
   ]), preconditions={"inventory_contains": candle, 'in_location': dungeon})
 
-  princess.add_action("talk to princess about ghost", describe_something, ("She says: 'My father haunts the dungeon as a restless spirit.'"))
-  princess.add_action("talk to princess about crown", describe_something, ("She says: 'Only the rightful heir to the throne may wear it.'"))
-  princess.add_action("talk to princess about herself", describe_something, ("She says: 'I cannot leave this tower until I am married!'"))
-  princess.add_action("talk to princess about throne", describe_something, ("She says: 'Only the king may sit on the throne.'"))
-  princess.add_action("kiss princess", describe_something, ("Not until we're wed"), preconditions={"location_has_item": princess})
-  princess.add_action("marry princess", perform_multiple_actions, ([
-    (destroy_item, (princess, "The princess says: 'My father’s crown! You have put his soul at rest and may now succeed him!'")),
+  talking_princess.add_action("talk to princess about ghost", describe_something, ("She says: 'My father haunts the dungeon as a restless spirit.'"))
+  talking_princess.add_action("talk to princess about crown", describe_something, ("She says: 'Only the rightful heir to the throne may wear it.'"))
+  talking_princess.add_action("talk to princess about herself", describe_something, ("She says: 'I cannot leave this tower until I am married!'"))
+  talking_princess.add_action("talk to princess about throne", describe_something, ("She says: 'Only the king may sit on the throne.'"))
+  talking_princess.add_action("kiss princess", describe_something, ("Not until we're wed"), preconditions={"location_has_item": talking_princess})
+  talking_princess.add_action("marry princess", perform_multiple_actions, ([
+    (destroy_item, (talking_princess, "The princess says: 'My father’s crown! You have put his soul at rest and may now succeed him!'")),
     (create_item, (married_princess, "The princess accepts your proposal and places the crown on your head.")),
     (create_item_location, (revelers, "Revelers flood the Great Feasting Hall.", great_feasting_hall)),
     (create_item_location, (courtiers_guards_subjects, "Courtiers, guards and other subjects cheer for you in the Throne Room.", throne_room))
