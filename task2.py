@@ -604,7 +604,7 @@ towne327 = Location("Towne 327", "You are standing in a classroom. There is an a
 broken_hub = Item("wifi hub", "a broken wifi hub", "the wifi hub isn't connecting devices to the internet", start_at=None, gettable=False)
 ethernet_cable = Item("ethernet cable", "a short ethernet cable", "the ethernet cable conveniently has USB-C", start_at=basement)
 laptop = Item("laptop", "your laptop", "your laptop already has Github and your IDE open")
-laptop.add_action("finish homework", end_game, ("You finish your homework while Daphne calls CETS. You even have time to alter your commit timestamps. You win!"), preconditions={"in_location": towne327, "inventory_contains": ethernet_cable, "location_has_item": broken_hub})
+laptop.add_action("finish homework", end_game, ("Daphne calls CETS and they take long enough for class to get delayed. You finish your homework with your wired internet connection. You win! Start earlier next time!"), preconditions={"in_location": towne327, "inventory_contains": ethernet_cable, "location_has_item": broken_hub})
 
 def build_game():
   # Locations
