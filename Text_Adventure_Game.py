@@ -561,6 +561,11 @@ def create_item(game, *args):
   game.curr_location.add_item(item.name, item)  
   print(description)
 
+def create_item_location(game, *args):
+  item, description, location = args[0]
+  location.add_item(item.name, item)  
+  print(description)
+
 def end_game(game, *args):
   """Ends the game."""
   end_message = args[0]
@@ -661,6 +666,12 @@ def build_game():
   crown = Item("crown", "A simple crown", "THERE IS A CROWN", start_at=None)
   guard = Item("guard", "a guard carrying a sword and a key", "HE LOOKS AT YOU SUSPICIOUSLY.", start_at=courtyard, gettable=False)
   unconscious_guard = Item("unconscious guard", "an unconscious guard is slumpped against the wall", "HE HAS BITS OF BRANCH ON HIS UNIFORM.", start_at=None, gettable=False)
+  ghost = Item("ghost", "a ghost is lurking", "The ghost has bony, claw-like ﬁngers and wears a crown.", start_at=dungeon, gettable=False)
+  princess = Item("princess", "the princess is here", "the princess is sad, beautiful and lonely. she awaits her prince.", start_at=tower, gettable=False)
+  married_princess = Item("married princess", "the married princess is here", "the princess is married to you now", start_at=None, gettable=False)
+  revelers = Item("revelers", "a group of revelers are celebrating their new king", "the revelers are very happy", start_at=None, gettable=False)
+  courtiers_guards_subjects = Item("courtiers, guards and other subjects", "the room is full of of courtiers, guards and other subjects", "they are very happy", start_at=None, gettable=False)
+  throne = Item("throne", "there is an ornate golden throne here.", "the throne is ornate", start_at=throne_room, gettable=False)
 
   # add blocks
   drawbridge.add_block("east", "There is a Troll blocking the path",  preconditions={"location_has_item_silent":unconscious_troll})
@@ -699,11 +710,26 @@ def build_game():
   candle.add_action("read candle", describe_something, ("The candle says 'The runes seem to be a spell of exorcism.'"))
   candle.add_action("light candle", perform_multiple_actions, ([
     (destroy_item, (candle, "You light the candle.")),
-    (create_item, (lit_candle, "The candle is giving off a strange, acrid-smelling smoke."))
-  ]), preconditions={"inventory_contains": candle})
+    (create_item, (lit_candle, "The candle is giving off a strange, acrid-smelling smoke.")),
+    (destroy_item, (ghost, "The ghost flees!")),
+    (create_item, (crown, "The ghost drops a golden crown."))
+  ]), preconditions={"inventory_contains": candle, 'in_location': dungeon})
+
+  princess.add_action("talk to princess about ghost", describe_something, ("She says: 'My father haunts the dungeon as a restless spirit.'"))
+  princess.add_action("talk to princess about crown", describe_something, ("She says: 'Only the rightful heir to the throne may wear it.'"))
+  princess.add_action("talk to princess about herself", describe_something, ("She says: 'I cannot leave this tower until I am married!'"))
+  princess.add_action("talk to princess about throne", describe_something, ("She says: 'Only the king may sit on the throne.'"))
+
+  princess.add_action("marry princess", perform_multiple_actions, ([
+    (destroy_item, (princess, "The princess says: 'My father’s crown! You have put his soul at rest and may now succeed him!'")),
+    (create_item, (married_princess, "The princess accepts your proposal and places the crown on your head.")),
+    (create_item_location, (revelers, "Revelers flood the Great Feasting Hall.", great_feasting_hall)),
+    (create_item_location, (courtiers_guards_subjects, "Courtiers, guards and other subjects cheer for you in the Throne Room.", throne_room))
+  ]), preconditions={"inventory_contains": crown})
+
+  throne.add_action("sit on throne", describe_something, ("You sit on the ornate golden throne. The people cheer for the new ruler of... ACTION CASTLE!"), preconditions={"location_has_item": courtiers_guards_subjects})
 
   return Game(cottage)
-
 
 # # Play the game
 # This small snippet of code is what you need to run the game.  Behold! The magestic prompt! 
