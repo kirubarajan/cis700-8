@@ -1,9 +1,15 @@
 # cis700-8
+> homework1: build a text-adventure game
 
-## todo
-- add JUMPing command, which can only occur in the tree
-- add something about the sword to the guard description
-- add response when attempting to kiss princess
-- add conditions for princess to response "You’re not royalty!" without crown when trying to marry
-- end the game when sitting on throne
-- update scores
+## Running the Game
+Run the *Action Castle* game by running:
+
+```
+python3 task1.py
+```
+
+Run the *Out of Towne* game by running:
+
+```
+python3 task2.py
+```
