@@ -15,6 +15,7 @@
 
 # In[1]:
 
+import pyjokes
 
 class Game:
   """The Game class represents the world.  Internally, we use a 
@@ -553,7 +554,13 @@ def destroy_item(game, *args):
     game.curr_location.remove_item(item)
     print(action_description)
   else:
-    print(already_done_description)
+    pass
+    # print(already_done_description)
+  return False
+
+def destroy_item_location(game, *args):
+  item, description, location = args[0]
+  location.remove_item(item)  
   return False
 
 def create_item(game, *args):
@@ -592,27 +599,50 @@ def perform_multiple_actions(game, *args):
 
 # In[7]:
 
+basement = Location("Towne Basement", "You are standing in a creepy basement. There is an eternal loud humming sound.")
+towne327 = Location("Towne 327", "You are standing in a classroom. There is an awkward silence as people try to understand what 'AI' actually means. There's an ethernet outlet here, but who ever brings ethernet cables?")
+broken_hub = Item("wifi hub", "a broken wifi hub", "the wifi hub isn't connecting devices to the internet", start_at=None, gettable=False)
+ethernet_cable = Item("ethernet cable", "a short ethernet cable", "the ethernet cable conveniently has USB-C", start_at=basement)
+laptop = Item("laptop", "your laptop", "your laptop already has Github and your IDE open")
+laptop.add_action("finish homework", end_game, ("You finish your homework while Daphne calls CETS. You even have time to alter your commit timestamps. You win!"), preconditions={"in_location": towne327, "inventory_contains": ethernet_cable, "location_has_item": broken_hub})
+
 def build_game():
   # Locations
-  hallway = Location("Towne Hallway", "Your assignment is due today. You are standing in a hallway. Dozens of undergraduates complain loudly about CIS 160. There is also a staircase at the end of the hall.")
+  hallway = Location("Towne Hallway", "Your assignment is due in 15 minutes. You are standing in a hallway. Dozens of undergraduates complain loudly about CIS 160. There is also a staircase at the end of the hall.")
   towne100 = Location("Towne 100", "You are standing in a lecture hall. It recently got renovated, but it's still the colour of overripe banana and smells like food truck.")
   stairs = Location("Towne Staircase", "You are standing in a staircase. It looks vaguely decrepit, but you can't tell how old.")
   upper_hallway= Location("Towne Upstairs Hallway", "You are standing in a hallway. It's weirdly quiet and all the rooms are locked except for one.")
-  towne327 = Location("Towne 327", "You are standing in a classroom. There is an awkward silence as people try to understand what 'AI' actually means.")
 
   hallway.add_connection("in", towne100)
-  hallway.add_connection("up", stairs)
+  hallway.add_connection("north", stairs)
 
   stairs.add_connection("up", upper_hallway)
-  stairs.add_connection("down", hallway)
+  stairs.add_connection("south", hallway)
+  stairs.add_connection("down", basement)
+
+  basement.add_connection("up", stairs)
 
   upper_hallway.add_connection("in", towne327)
 
   # Items
+  router = Item("router", "a big internet router", "the router is plugged into the wall", start_at=basement, gettable=False)
+  unplugged_router = Item("unplugged Router", "an unplugged internet router", "the router looks lifeless", start_at=None, gettable=False)
+  hub = Item("wifi hub", "a wifi hub", "the wifi hub is relaying signal in the room", start_at=towne327, gettable=False)
+  fire_alarm = Item("fire alarm", "a red fire alarm switch", "the switch looks easy to pull", start_at=towne100, gettable=False)
+  ccb = Item("chris", "Chris", "a professor is standing here, wearing a floral shirt", start_at=towne327, gettable=False)
+  daphne = Item("daphne", "Daphne", "a PhD instructor is standing here, checking course material and reveling in her fast internet connection", start_at=towne327, gettable=False)
 
-  # Scenery
-  ccb = Item("Chris", "Chris", "a professor is standing here with a Star Wars shirt", start_at=towne327, gettable=False)
-  daphne = Item("Daphne", "Daphne", "a PhD instructor is standing here refreshing Gradescope", start_at=towne327, gettable=False)
+  ccb.add_action("talk to chris", describe_something, ("He says: " + pyjokes.get_joke()))
+  daphne.add_action("talk to daphne", describe_something, ("She says: " + pyjokes.get_joke()))
+
+  router.add_action("unplug router", perform_multiple_actions, ([
+    (destroy_item, (router, "You unplug the router from the wall.")),
+    (create_item, (unplugged_router, "The router is unplugged. Your phone starts bugging you about connecting to the internet.")),
+    (destroy_item_location, (hub, "You wonder what's happening in your classroom.", towne327)),
+    (create_item_location, (broken_hub, "Do you have enough time to get your attendance grade AND finish the assignment?", towne327))
+  ]), preconditions={"in_location": basement, "location_has_item": router})
+
+  fire_alarm.add_action("pull alarm", end_game, ("You pull the fire alarm and the police arrive, diverting units from a serious situation. You die from grief. Game over."))
 
   return Game(hallway)
 
@@ -621,11 +651,12 @@ def build_game():
 
 # In[ ]:
 
-
 def game_loop():
   game = build_game()
   parser = Parser(game)
   game.describe()
+
+  game.add_to_inventory(laptop)
 
   command = ""
   while not (command.lower() == "exit" or command.lower == "q"):
@@ -645,9 +676,9 @@ print('THE GAME HAS ENDED.')
 
 
 #!pip install graphviz
-from graphviz import Digraph
-from IPython.display import Image
-import queue
+# from graphviz import Digraph
+# from IPython.display import Image
+# import queue
 
 def DFS(game, graph):
   """Do a depth-first-search traversal of the locations in the game
@@ -704,9 +735,9 @@ def save_to_drive(graph):
   drive.mount('/content/drive/')
   graph.render('/content/drive/My Drive/game-visualization', view=True)  
 
-graph = Digraph(node_attr={'color': 'lightblue2', 'style': 'filled'})
+"""graph = Digraph(node_attr={'color': 'lightblue2', 'style': 'filled'})
 game = build_game()
 DFS(game, graph)
 #save_to_drive(graph)
-graph
+graph"""
 
